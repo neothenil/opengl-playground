@@ -7,6 +7,10 @@ list(APPEND BACKEND_INCLUDE_DIRS
     "${CMAKE_SOURCE_DIR}/deps/stb")
 list(APPEND BACKEND_LIBS assimp glad glfw glm_static)
 
+if(check_memory)
+    add_definitions(-DMEMCHECK)
+endif()
+
 add_executable(main ${SOURCES})
 target_include_directories(main PUBLIC "${BACKEND_INCLUDE_DIRS}")
 target_compile_definitions(main PRIVATE GLFW_INCLUDE_NONE)

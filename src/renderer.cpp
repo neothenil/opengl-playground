@@ -2,6 +2,11 @@
 #include "exceptions.h"
 #include <glad/glad.h>
 #include <thread>
+#ifdef MEMCHECK
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
 
 void Renderer::initialize()
 {
@@ -40,7 +45,14 @@ void Renderer::initialize()
 
 void Renderer::renderLoop()
 {
+#ifdef MEMCHECK
+    _CrtMemState s1, s2, diff;
+#endif
     while(!glfwWindowShouldClose(mWindow)) {
+#ifdef MEMCHECK
+        _CrtMemCheckpoint(&s1);
+        // _CrtMemDumpStatistics(&s1);
+#endif
         auto currTime = std::chrono::steady_clock::now();
         long microsecPerLoop = 1000000 / mFPS;
         microsecPerLoop = (95 * microsecPerLoop) / 100; // give a little slack so we actually hit target fps
@@ -53,6 +65,12 @@ void Renderer::renderLoop()
         processInput();
         draw();
         glfwSwapBuffers(mWindow);
+#ifdef MEMCHECK
+        _CrtMemCheckpoint(&s2);
+        // _CrtMemDumpStatistics(&s2);
+        _CrtMemDifference(&diff, &s1, &s2);
+        _CrtMemDumpStatistics(&diff);
+#endif
     }
 }
 

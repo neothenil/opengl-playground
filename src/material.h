@@ -36,6 +36,7 @@ public:
             mSize = other.mSize;
             mType = other.mType;
             mData.reset(operator new(other.mSize));
+            mData.get_deleter() = [](void* p){ operator delete(p); };
             std::memcpy(mData.get(), other.mData.get(), other.mSize);
         }
         return *this;
