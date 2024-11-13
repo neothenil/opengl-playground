@@ -33,6 +33,19 @@ void Renderer::initialize()
         Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
         renderer->updateWindowSize(width, height);
     });
+    // mouse event setup
+    glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double xoffset, double yoffset){
+        Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+        renderer->scrollEvent(xoffset, yoffset);
+    });
+    glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double xpos, double ypos){
+        Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+        renderer->mousePositionEvent(xpos, ypos);
+    });
+    glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int mods){
+        Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+        renderer->mouseButtonEvent(button, action, mods);
+    });
     // build shaders
     std::string vertexSource, fragmentSource;
     vertexSource = readFile("D:\\MyFiles\\games-202\\playground\\src\\shaders\\basic\\vertex.glsl");
@@ -101,5 +114,43 @@ void Renderer::draw()
     for (auto& m: mMeshes) {
         Mesh* mesh = m.get();
         mesh->draw(mCamera, mShaders["basic"]);
+    }
+}
+
+void Renderer::scrollEvent(double xoffset, double yoffset)
+{
+    // zoom operation
+    double maxScroll = xoffset;
+    if (std::abs(yoffset) > std::abs(xoffset)) {
+        maxScroll = yoffset;
+    }
+    mCamera.processZoom(maxScroll);
+}
+
+void Renderer::mouseButtonEvent(int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT) {
+        double xpos = 0, ypos = 0;
+        glfwGetCursorPos(mWindow, &xpos, &ypos);
+        mLastCursorPosition = glm::vec2(xpos, ypos);
+    }
+}
+
+void Renderer::mousePositionEvent(double xpos, double ypos)
+{
+    if (glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        // rotate operation
+        glm::vec2 start(mLastCursorPosition.x / mWidth, (mHeight - mLastCursorPosition.y) / mHeight);
+        glm::vec2 end(xpos / mWidth, (mHeight - ypos) / mHeight);
+        start = 2.0f * start - 1.0f;
+        end = 2.0f * end - 1.0f;
+        mLastCursorPosition = glm::vec2(xpos, ypos);
+        mCamera.processRotate(start, end);
+    }
+    else if (glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+        // pan operation
+        glm::vec2 delta((xpos - mLastCursorPosition.x) / mWidth, (mLastCursorPosition.y - ypos) / mHeight);
+        mLastCursorPosition = glm::vec2(xpos, ypos);
+        mCamera.processPan(delta);
     }
 }

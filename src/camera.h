@@ -4,6 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+extern const double PI;
+
 class Camera
 {
     glm::vec3 mPosition;
@@ -18,6 +20,7 @@ class Camera
     void updateProjectMatrix()
     {mProjectMatrix = glm::perspective(glm::radians(mFov), mAspectRatio, mNear, mFar);}
     void updateMatrices() { updateViewMatrix(); updateProjectMatrix(); }
+    void getFrame(glm::vec3 &lookDir, glm::vec3 &upDir, glm::vec3 &rightDir);
 
 public:
     Camera(const glm::vec3& position, const glm::vec3& target,
@@ -35,4 +38,8 @@ public:
     void setAspectRatio(float aspectRatio) {mAspectRatio = aspectRatio; updateProjectMatrix();}
     glm::mat4 viewMatrix() const { return mViewMatrix; }
     glm::mat4 projectMatrix() const { return mProjectMatrix; }
+
+    void processZoom(double scroll);
+    void processPan(glm::vec2 delta);
+    void processRotate(glm::vec2 start, glm::vec2 end);
 };

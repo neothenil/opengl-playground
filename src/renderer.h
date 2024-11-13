@@ -20,9 +20,13 @@ class Renderer
     std::chrono::steady_clock::time_point mLastFrameTime;
     std::map<std::string, Shader> mShaders;
     Camera mCamera;
+    glm::vec2 mLastCursorPosition;
 
     void processInput();
     void draw();
+    void scrollEvent(double xoffset, double yoffset);
+    void mouseButtonEvent(int button, int action, int mods);
+    void mousePositionEvent(double xpos, double ypos);
 
 public:
     Renderer(): mWidth(1280), mHeight(800), mFPS(60), mWindow(nullptr),
